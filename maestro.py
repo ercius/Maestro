@@ -44,7 +44,14 @@ class Controller:
     # Cleanup by closing USB serial port
     def close(self):
         self.usb.close()
-
+    
+    def __enter__(self):
+        return self
+        
+    def __exit__(self, *exc):
+        if self.usb.isOpen():
+            self.close()
+    
     # Send a Pololu command out the serial port
     def sendCmd(self, cmd):
         cmdStr = self.PololuCmd + cmd
