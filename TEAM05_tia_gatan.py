@@ -1,6 +1,8 @@
 import sys
 sys.path.append('c:/users/supervisor/utilities/maestro/')
 
+import time
+
 import maestro
 
 """
@@ -19,7 +21,7 @@ def set_TIA():
         print('Starting position = {}'.format(x))
     
         servo.setTarget(1, position)
-    
+        time.sleep(3)
         y = servo.getPosition(1) #get the current position of servo 1
         print('new position = {}'.format(y))
         
@@ -34,7 +36,7 @@ def set_Gatan():
         print('Starting position = {}'.format(x))
     
         servo.setTarget(1, position)
-    
+        time.sleep(3)
         y = servo.getPosition(1) #get the current position of servo 1
         print('new position = {}'.format(y))
         
@@ -49,6 +51,8 @@ def set_neutral():
         print('Starting position = {}'.format(x))
     
         servo.setTarget(1, position)
-    
+        
+        time.sleep(3)
+        
         y = servo.getPosition(1) #get the current position of servo 1
         print('new position = {}'.format(y))
