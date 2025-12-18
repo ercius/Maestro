@@ -7,7 +7,7 @@ import maestro
 
 """
 position_neutral = 7080
-position_TIA = 6532
+position_TIA = 6532 TIA2 = 6400
 position_Gatan = 8000
 """
 
@@ -24,6 +24,21 @@ def set_TIA():
         time.sleep(3)
         y = servo.getPosition(1) #get the current position of servo 1
         print('new position = {}'.format(y))
+        
+def set_TIA2():
+    with maestro.Controller(ttyStr='COM4') as servo:
+        position = 6400
+        # 10 is a good speed
+        servo.setSpeed(1, 10)
+
+        x = servo.getPosition(1) #get the current position of servo 1
+        print('Starting position = {}'.format(x))
+    
+        servo.setTarget(1, position)
+        time.sleep(3)
+        y = servo.getPosition(1) #get the current position of servo 1
+        print('new position = {}'.format(y))
+        
         
 def set_Gatan():
     with maestro.Controller(ttyStr='COM4') as servo:
@@ -43,6 +58,23 @@ def set_Gatan():
 def set_neutral():
     with maestro.Controller(ttyStr='COM4') as servo:
         position = 7080
+
+        # 10 is a good speed
+        servo.setSpeed(1, 10)
+
+        x = servo.getPosition(1) #get the current position of servo 1
+        print('Starting position = {}'.format(x))
+    
+        servo.setTarget(1, position)
+        
+        time.sleep(3)
+        
+        y = servo.getPosition(1) #get the current position of servo 1
+        print('new position = {}'.format(y))
+        
+def set_value(val):
+    with maestro.Controller(ttyStr='COM4') as servo:
+        position = val
 
         # 10 is a good speed
         servo.setSpeed(1, 10)
