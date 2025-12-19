@@ -15,6 +15,8 @@ class App(tk.Frame):
     def __init__(self, master):
         super().__init__(master)
         self.pack()
+
+        self.com_port = 'COM10' # COM4 for TEAM0.5_support; COM10 for OneView computer 
         
         self.button_TIA = tk.Button(text="TIA", width=25, height=5, bg="yellow",fg="black",command=self.set_TIA2)
         self.button_TIA.pack()
@@ -25,7 +27,7 @@ class App(tk.Frame):
         self.set_TIA2()
         
     def set_TIA(self,):
-        with maestro.Controller(ttyStr='COM4') as servo:
+        with maestro.Controller(ttyStr=self.com_port) as servo:
             position = 6532
             # 10 is a good speed
             servo.setSpeed(1, 10)
@@ -42,7 +44,7 @@ class App(tk.Frame):
         self.button_Gatan['background'] = 'gray'
             
     def set_TIA2(self,):
-        with maestro.Controller(ttyStr='COM4') as servo:
+        with maestro.Controller(ttyStr=self.com_port) as servo:
             position = 6400
             # 10 is a good speed
             servo.setSpeed(1, 10)
@@ -60,7 +62,7 @@ class App(tk.Frame):
             
             
     def set_Gatan(self,):
-        with maestro.Controller(ttyStr='COM4') as servo:
+        with maestro.Controller(ttyStr=self.com_port) as servo:
             position = 8000
 
             # 10 is a good speed
@@ -78,7 +80,7 @@ class App(tk.Frame):
         self.button_TIA['background'] = 'gray'
             
     def set_neutral(self,):
-        with maestro.Controller(ttyStr='COM4') as servo:
+        with maestro.Controller(ttyStr=self.com_port) as servo:
             position = 7080
 
             # 10 is a good speed
@@ -95,7 +97,7 @@ class App(tk.Frame):
             print('new position = {}'.format(y))
             
     def set_value(self,val):
-        with maestro.Controller(ttyStr='COM4') as servo:
+        with maestro.Controller(ttyStr=self.com_port) as servo:
             position = val
 
             # 10 is a good speed
@@ -114,6 +116,6 @@ class App(tk.Frame):
 if __name__ == "__main__":
     root = tk.Tk()
     root.title("Scan selector")
-    #root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(file=r'C:\Users\Supervisor\Pictures\TIA-Gatan.ico')
     myapp = App(root)
+    root.iconbitmap('TIA-Gatan.ico')
     myapp.mainloop()
