@@ -2,7 +2,6 @@ import sys
 import tkinter as tk
 import time
 
-sys.path.append('c:/users/supervisor/utilities/maestro/')
 import maestro
 
 """
