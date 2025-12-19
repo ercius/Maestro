@@ -11,12 +11,12 @@ position_TIA = 6532 TIA2 = 6400
 position_Gatan = 8000
 """
     
-class App(tk.Frame):
+class ScanSelector(tk.Frame):
     def __init__(self, master):
-        super().__init__(master)
+        super().__init__(master, com_port='COM10')
         self.pack()
 
-        self.com_port = 'COM10' # COM4 for TEAM0.5_support; COM10 for OneView computer 
+        self.com_port = com_port # COM4 for TEAM0.5_support; COM10 for OneView computer 
         
         self.button_TIA = tk.Button(text="TIA", width=25, height=5, bg="yellow",fg="black",command=self.set_TIA2)
         self.button_TIA.pack()
@@ -116,6 +116,6 @@ class App(tk.Frame):
 if __name__ == "__main__":
     root = tk.Tk()
     root.title("Scan selector")
-    myapp = App(root)
+    myapp = ScanSelector(root, com_port="COM10") # COM10 is for the Gatan PC
     root.iconbitmap('TIA-Gatan.ico')
     myapp.mainloop()
