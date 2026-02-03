@@ -1,4 +1,9 @@
-﻿maestro.py
+﻿TEAM 0.5 Files
+==============
+
+I added a GUI with an embedded zmq server. This allows the user to click the button locally and a message client (based on JSON messages) to also change the state.
+
+maestro.py
 ==========
 
 This Python class supports Pololu's Maestro servo controller over USB serial. Great for use with the Raspberry Pi, but works with Windows too.
