@@ -1,4 +1,5 @@
 import sys
+import argparse
 import tkinter as tk
 import time
 import zmq
@@ -191,13 +192,18 @@ class App(tk.Frame):
             print('new position = {}'.format(y))
     
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Scan selector GUI with ZMQ server")
+    parser.add_argument("--com-port", default="COM10", help="Serial COM port (default: COM10)")
+    parser.add_argument("--zmq-port", type=int, default=5555, help="ZMQ server port (default: 5555)")
+    args = parser.parse_args()
+
     root = tk.Tk()
     root.title("Scan selector")
     #root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(file=r'C:\Users\VALUEDGATANCUSTOMER\Documents\Maestro_zmq\TIA-Gatan.ico')
-    myapp = App(root, "COM10") # COM10 for Gatan PC, COM4 for support PC
+    myapp = App(root, args.com_port)
 
     # Start ZMQ server
-    zmq_server = ZMQServer(myapp, port=5555)
+    zmq_server = ZMQServer(myapp, port=args.zmq_port)
     zmq_server.start()
 
     # Ensure server stops when window closes
