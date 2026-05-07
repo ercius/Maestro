@@ -9,11 +9,6 @@ import threading
 # sys.path.append('c:/users/supervisor/utilities/maestro/')
 import maestro
 
-"""
-position_neutral = 7080
-position_TIA = 6532 TIA2 = 6400
-position_Gatan = 8000
-"""
 
 class ZMQServer:
     def __init__(self, app, port=5555):
@@ -65,21 +60,12 @@ class ZMQServer:
             if action == "set_TIA":
                 self.app.set_TIA()
                 return {"status": "success", "action": "set_TIA"}
-            elif action == "set_TIA2":
-                self.app.set_TIA2()
-                return {"status": "success", "action": "set_TIA2"}
             elif action == "set_Gatan":
                 self.app.set_Gatan()
                 return {"status": "success", "action": "set_Gatan"}
-            elif action == "set_neutral":
-                self.app.set_neutral()
-                return {"status": "success", "action": "set_neutral"}
-            elif action == "set_value":
-                value = command.get("value")
-                if value is None:
-                    return {"status": "error", "message": "value parameter required"}
-                self.app.set_value(value)
-                return {"status": "success", "action": "set_value", "value": value}
+            elif action == "set_Arina":
+                self.app.set_Arina()
+                return {"status": "success", "action": "set_Arina"}
             else:
                 return {"status": "error", "message": f"Unknown action: {action}"}
         except json.JSONDecodeError:
@@ -87,126 +73,100 @@ class ZMQServer:
         except Exception as e:
             return {"status": "error", "message": str(e)}
 
+
 class App(tk.Frame):
-    def __init__(self, master, com_port):
+    def __init__(self, master, com_port, channels, engaged, neutrals):
         super().__init__(master)
         self.com_port = com_port
+        self.channels = channels  # {"TIA": int, "Gatan": int, "Arina": int}
+        self.engaged = engaged    # {"TIA": int, "Gatan": int, "Arina": int}
+        self.neutrals = neutrals  # {"TIA": int, "Gatan": int, "Arina": int}
         self.pack()
-        
-        self.button_TIA = tk.Button(text="TIA", width=25, height=5, bg="yellow",fg="black",command=self.set_TIA2)
+
+        self.button_TIA = tk.Button(text="TIA", width=25, height=5, bg="gray", fg="black", command=self.set_TIA)
         self.button_TIA.pack()
-        
-        self.button_Gatan = tk.Button(text="Gatan", width=25, height=5, bg="gray",fg="black",command=self.set_Gatan)
+
+        self.button_Gatan = tk.Button(text="Gatan", width=25, height=5, bg="gray", fg="black", command=self.set_Gatan)
         self.button_Gatan.pack()
-        
-        self.set_TIA2()
-        
-    def set_TIA(self,):
+
+        self.button_Arina = tk.Button(text="Arina", width=25, height=5, bg="gray", fg="black", command=self.set_Arina)
+        self.button_Arina.pack()
+
+    def _move_all(self, positions):
         with maestro.Controller(ttyStr=self.com_port) as servo:
-            position = 6532
-            # 10 is a good speed
-            servo.setSpeed(1, 10)
-
-            x = servo.getPosition(1) #get the current position of servo 1
-            print('Starting position = {}'.format(x))
-        
-            servo.setTarget(1, position)
+            for channel, position in positions.items():
+                servo.setSpeed(channel, 10)
+                x = servo.getPosition(channel)
+                print(f"Channel {channel} starting position = {x}")
+                servo.setTarget(channel, position)
             time.sleep(3)
-            y = servo.getPosition(1) #get the current position of servo 1
-            print('new position = {}'.format(y))
-            
-        self.button_TIA['background'] = 'yellow'
-        self.button_Gatan['background'] = 'gray'
-            
-    def set_TIA2(self,):
-        with maestro.Controller(ttyStr=self.com_port) as servo:
-            position = 6400
-            # 10 is a good speed
-            servo.setSpeed(1, 10)
+            for channel in positions:
+                y = servo.getPosition(channel)
+                print(f"Channel {channel} new position = {y}")
 
-            x = servo.getPosition(1) #get the current position of servo 1
-            print('Starting position = {}'.format(x))
-        
-            servo.setTarget(1, position)
-            time.sleep(3)
-            y = servo.getPosition(1) #get the current position of servo 1
-            print('new position = {}'.format(y))
-            
-        self.button_TIA['background'] = 'yellow'
-        self.button_Gatan['background'] = 'gray'
-            
-            
-    def set_Gatan(self,):
-        with maestro.Controller(ttyStr=self.com_port) as servo:
-            position = 8000
+    def _highlight(self, active):
+        active_colors = {"TIA": "yellow", "Gatan": "cyan", "Arina": "orange"}
+        for name, button in [("TIA", self.button_TIA), ("Gatan", self.button_Gatan), ("Arina", self.button_Arina)]:
+            button["background"] = active_colors[name] if name == active else "gray"
 
-            # 10 is a good speed
-            servo.setSpeed(1, 10)
+    def set_TIA(self):
+        self._move_all({
+            self.channels["TIA"]:   self.engaged["TIA"],
+            self.channels["Gatan"]: self.neutrals["Gatan"],
+            self.channels["Arina"]: self.neutrals["Arina"],
+        })
+        self._highlight("TIA")
 
-            x = servo.getPosition(1) #get the current position of servo 1
-            print('Starting position = {}'.format(x))
-        
-            servo.setTarget(1, position)
-            time.sleep(3)
-            y = servo.getPosition(1) #get the current position of servo 1
-            print('new position = {}'.format(y))
-        
-        self.button_Gatan['background'] = 'yellow'
-        self.button_TIA['background'] = 'gray'
-            
-    def set_neutral(self,):
-        with maestro.Controller(ttyStr=self.com_port) as servo:
-            position = 7080
+    def set_Gatan(self):
+        self._move_all({
+            self.channels["TIA"]:   self.neutrals["TIA"],
+            self.channels["Gatan"]: self.engaged["Gatan"],
+            self.channels["Arina"]: self.neutrals["Arina"],
+        })
+        self._highlight("Gatan")
 
-            # 10 is a good speed
-            servo.setSpeed(1, 10)
+    def set_Arina(self):
+        self._move_all({
+            self.channels["TIA"]:   self.neutrals["TIA"],
+            self.channels["Gatan"]: self.neutrals["Gatan"],
+            self.channels["Arina"]: self.engaged["Arina"],
+        })
+        self._highlight("Arina")
 
-            x = servo.getPosition(1) #get the current position of servo 1
-            print('Starting position = {}'.format(x))
 
-            servo.setTarget(1, position)
-
-            time.sleep(3)
-
-            y = servo.getPosition(1) #get the current position of servo 1
-            print('new position = {}'.format(y))
-
-        self.button_TIA['background'] = 'gray'
-        self.button_Gatan['background'] = 'gray'
-            
-    def set_value(self,val):
-        with maestro.Controller(ttyStr=self.com_port) as servo:
-            position = val
-
-            # 10 is a good speed
-            servo.setSpeed(1, 10)
-
-            x = servo.getPosition(1) #get the current position of servo 1
-            print('Starting position = {}'.format(x))
-        
-            servo.setTarget(1, position)
-            
-            time.sleep(3)
-            
-            y = servo.getPosition(1) #get the current position of servo 1
-            print('new position = {}'.format(y))
-    
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Scan selector GUI with ZMQ server")
     parser.add_argument("--com-port", default="COM10", help="Serial COM port (default: COM10)")
     parser.add_argument("--zmq-port", type=int, default=5555, help="ZMQ server port (default: 5555)")
+
+    # Servo channels
+    parser.add_argument("--tia-channel",   type=int, default=1, help="Servo channel for TIA (default: 1)")
+    parser.add_argument("--gatan-channel", type=int, default=2, help="Servo channel for Gatan (default: 2)")
+    parser.add_argument("--arina-channel", type=int, default=3, help="Servo channel for Arina (default: 3)")
+
+    # Engaged positions (set these once servos are installed)
+    parser.add_argument("--tia-engaged",   type=int, default=6400, help="TIA engaged position (default: 6400)")
+    parser.add_argument("--gatan-engaged", type=int, default=8000, help="Gatan engaged position (default: 8000)")
+    parser.add_argument("--arina-engaged", type=int, default=6000, help="Arina engaged position (default: 6000)")
+
+    # Neutral positions (can differ per servo)
+    parser.add_argument("--tia-neutral",   type=int, default=7080, help="TIA neutral position (default: 7080)")
+    parser.add_argument("--gatan-neutral", type=int, default=7080, help="Gatan neutral position (default: 7080)")
+    parser.add_argument("--arina-neutral", type=int, default=7080, help="Arina neutral position (default: 7080)")
+
     args = parser.parse_args()
+
+    channels = {"TIA": args.tia_channel,   "Gatan": args.gatan_channel,   "Arina": args.arina_channel}
+    engaged  = {"TIA": args.tia_engaged,   "Gatan": args.gatan_engaged,   "Arina": args.arina_engaged}
+    neutrals = {"TIA": args.tia_neutral,   "Gatan": args.gatan_neutral,   "Arina": args.arina_neutral}
 
     root = tk.Tk()
     root.title("Scan selector")
-    #root.tk.call('wm', 'iconphoto', root._w, tk.PhotoImage(file=r'C:\Users\VALUEDGATANCUSTOMER\Documents\Maestro_zmq\TIA-Gatan.ico')
-    myapp = App(root, args.com_port)
+    myapp = App(root, args.com_port, channels, engaged, neutrals)
 
-    # Start ZMQ server
     zmq_server = ZMQServer(myapp, port=args.zmq_port)
     zmq_server.start()
 
-    # Ensure server stops when window closes
     def on_closing():
         zmq_server.stop()
         root.destroy()
